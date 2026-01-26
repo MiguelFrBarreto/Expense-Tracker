@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.expenseTracker.dtos.ExpenseRequest;
 import com.example.expenseTracker.dtos.ExpenseResponse;
 import com.example.expenseTracker.dtos.ExpenseUpdateRequest;
+import com.example.expenseTracker.entities.Category;
 import com.example.expenseTracker.entities.Expense;
+import com.example.expenseTracker.exceptions.AccessDeniedException;
 import com.example.expenseTracker.exceptions.ExpenseNotFoundException;
 import com.example.expenseTracker.repositories.ExpenseRepository;
 
@@ -22,9 +24,13 @@ public class ExpenseService {
     private final CategoryService categoryService;
 
     @Transactional(readOnly = true)
-    public ExpenseResponse findById(Long id) {
+    public ExpenseResponse findById(Long id, Long userId) {
         Expense expense = repository.findById(id)
                 .orElseThrow(() -> new ExpenseNotFoundException("Expense not found"));
+
+        if (!expense.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Forbidden");
+        }
 
         return ExpenseResponse.fromEntity(expense);
     }
@@ -43,7 +49,6 @@ public class ExpenseService {
                 .toList();
     }
 
-    //Pegar userId pelo controller com @AuthenticationPrincipal
     @Transactional
     public ExpenseResponse create(ExpenseRequest request, Long userId) {
         Expense expense = new Expense(
@@ -59,28 +64,36 @@ public class ExpenseService {
     }
 
     @Transactional
-    public ExpenseResponse update(ExpenseUpdateRequest request, Long id) {
-        Expense expense = repository.findById(id)
+    public ExpenseResponse update(ExpenseUpdateRequest request, Long expenseId, Long userId) {
+        Expense expense = repository.findById(expenseId)
                 .orElseThrow(() -> new ExpenseNotFoundException("Expense not found"));
 
-        if (request.description() != null) {
-            expense.setDescription(request.description());
+        if (!expense.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Forbidden");
         }
-        if (request.amount() != null && request.amount() > 0) {
-            expense.setAmount(request.amount());
+
+        Category category = categoryService.findEntityById(request.categoryId());
+
+        if (category.getUser() == null || !category.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Forbidden");
         }
-        if (request.categoryId() != null && request.categoryId() > 0) {
-            expense.setCategory(categoryService.findEntityById(request.categoryId()));
-        }
+
+        expense.setDescription(request.description());
+        expense.setAmount(request.amount());
+        expense.setCategory(category);
+
         return ExpenseResponse.fromEntity(expense);
     }
 
     @Transactional
-    public void deleteById(Long id) {
-        if (!repository.existsById(id)) {
-            throw new ExpenseNotFoundException("Expense not found");
+    public void deleteById(Long expenseId, Long userId) {
+        Expense expense = repository.findById(expenseId)
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not foubd"));
+
+        if (!expense.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Forbidden");
         }
 
-        repository.deleteById(id);
+        repository.delete(expense);
     }
 }

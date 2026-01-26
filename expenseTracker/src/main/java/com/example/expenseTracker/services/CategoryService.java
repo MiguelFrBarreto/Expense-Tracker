@@ -11,6 +11,7 @@ import com.example.expenseTracker.dtos.CategoryResponse;
 import com.example.expenseTracker.dtos.CategoryUpdateRequest;
 import com.example.expenseTracker.entities.Category;
 import com.example.expenseTracker.entities.User;
+import com.example.expenseTracker.exceptions.AccessDeniedException;
 import com.example.expenseTracker.exceptions.CategoryNotFoundException;
 import com.example.expenseTracker.repositories.CategoryRepository;
 
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository repository;
+    private final UserService userService;
 
     @Transactional(readOnly = true)
     public Category findEntityById(Long id) {
@@ -28,9 +30,13 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public CategoryResponse findById(Long id) {
+    public CategoryResponse findById(Long id, Long userId) {
         Category category = repository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+
+        if (category.getUser() != null && !category.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Forbidden");
+        }
 
         return CategoryResponse.fromEntity(category);
     }
@@ -58,9 +64,11 @@ public class CategoryService {
     }
 
     @Transactional()
-    public CategoryResponse create(CategoryRequest request, User user) {
+    public CategoryResponse create(CategoryRequest request, Long userId) {
         Category category = new Category(request.name(), null);
-        if (!(user == null)){
+
+        if (userId != null) {
+            User user = userService.findEntityById(userId);
             category.setUser(user);
         }
 
@@ -68,9 +76,13 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoryResponse update(CategoryUpdateRequest request, Long id) {
-        Category category = repository.findById(id)
+    public CategoryResponse update(CategoryUpdateRequest request, Long categoryId, Long userId) {
+        Category category = repository.findById(categoryId)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+
+        if (category.getUser() == null || !category.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Forbidden");
+        }
 
         category.setName(request.name());
 
@@ -78,11 +90,14 @@ public class CategoryService {
     }
 
     @Transactional
-    public void deleteById(Long id) {
-        if (!repository.existsById(id)) {
-            throw new CategoryNotFoundException("Category not found");
+    public void deleteById(Long categoryId, Long userId) {
+        Category category = repository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+
+        if (category.getUser() == null || !category.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Forbidden");
         }
 
-        repository.deleteById(id);
+        repository.delete(category);
     }
 }

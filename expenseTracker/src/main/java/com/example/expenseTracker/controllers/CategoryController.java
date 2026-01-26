@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,9 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.expenseTracker.dtos.CategoryRequest;
 import com.example.expenseTracker.dtos.CategoryResponse;
 import com.example.expenseTracker.dtos.CategoryUpdateRequest;
-import com.example.expenseTracker.entities.User;
+import com.example.expenseTracker.dtos.JWTUserData;
 import com.example.expenseTracker.services.CategoryService;
-import com.example.expenseTracker.services.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,44 +31,36 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CategoryController {
     private final CategoryService service;
-    private final UserService userService;
-    
-    @GetMapping()
-    public ResponseEntity<List<CategoryResponse>> findAll(){
-        return ResponseEntity.ok(service.findAll());
-    }
 
-    //implements @me
-    @GetMapping("/users/{userId}")
-    public ResponseEntity<List<CategoryResponse>> findAllByUserId(@PathVariable Long userId){
-        return ResponseEntity.ok(service.findAllByUserId(userId));
+    @GetMapping()
+    public ResponseEntity<List<CategoryResponse>> findAllByUserId(@AuthenticationPrincipal JWTUserData userData){
+        return ResponseEntity.ok(service.findAllByUserId(userData.userId()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponse> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.findById(id));
+    public ResponseEntity<CategoryResponse> findById(@PathVariable Long id, @AuthenticationPrincipal JWTUserData userData) {
+        return ResponseEntity.ok(service.findById(id, userData.userId()));
     }
  
-    //implements @me
-    @PostMapping("/{userId}")
-    public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest request, @PathVariable Long userId) {
-        User user = userService.findEntityById(userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request, user));
+    @PostMapping()
+    public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest request, @AuthenticationPrincipal JWTUserData userData) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request, userData.userId()));
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id){
-        service.deleteById(id);
+    public ResponseEntity<Void> deleteById(@PathVariable Long id, @AuthenticationPrincipal JWTUserData userData){
+        service.deleteById(id, userData.userId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Void> update(@Valid @RequestBody CategoryUpdateRequest request, Long id){
-        service.update(request, id);
+    public ResponseEntity<Void> update(@Valid @RequestBody CategoryUpdateRequest request, @PathVariable Long id, @AuthenticationPrincipal JWTUserData userData){
+        service.update(request, id, userData.userId());
         return ResponseEntity.noContent().build();
     }
 
     //Global category (has not user)
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/global")
     public ResponseEntity<CategoryResponse> createGlobalCategory(@Valid @RequestBody CategoryRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request, null));
