@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.expenseTracker.dtos.JWTUserData;
+import com.example.expenseTracker.dtos.UserNameRequest;
 import com.example.expenseTracker.dtos.UserPasswordRequest;
 import com.example.expenseTracker.dtos.UserResponse;
-import com.example.expenseTracker.dtos.UserNameRequest;
 import com.example.expenseTracker.services.UserService;
 
 import jakarta.validation.Valid;
@@ -29,7 +29,7 @@ public class UserController {
     private final UserService service;
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping()
+    @GetMapping("/all")
     public ResponseEntity<List<UserResponse>> findAll() {
         return ResponseEntity.ok(service.findAll());
     }
