@@ -43,7 +43,7 @@ public class AuthService {
         }
         
         User user = new User();
-        user.setUsername(request.username());
+        user.setName(request.name());
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
 
@@ -51,6 +51,6 @@ public class AuthService {
         
         userRepository.save(user);
 
-        return new RegisterResponse(user.getUsername(), user.getEmail());
+        return new RegisterResponse(user.getName(), user.getEmail());
     }
 }

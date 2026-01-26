@@ -6,7 +6,7 @@ import com.example.expenseTracker.entities.User;
 
 public record UserResponse(
         Long id,
-        String username,
+        String name,
         String email,
         List<ExpenseResponse> expenses,
         List<CategoryResponse> categories) {
@@ -14,7 +14,7 @@ public record UserResponse(
     public static UserResponse fromEntity(User user) {
         return new UserResponse(
                 user.getId(),
-                user.getUsername(),
+                user.getName(),
                 user.getEmail(),
                 user.getExpenses().stream()
                         .map(ExpenseResponse::fromEntity)

@@ -6,9 +6,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.expenseTracker.dtos.UserNameRequest;
 import com.example.expenseTracker.dtos.UserPasswordRequest;
 import com.example.expenseTracker.dtos.UserResponse;
-import com.example.expenseTracker.dtos.UserUsernameRequest;
 import com.example.expenseTracker.entities.User;
 import com.example.expenseTracker.exceptions.InvalidPasswordException;
 import com.example.expenseTracker.exceptions.UserNotFoundException;
@@ -50,11 +50,11 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateUsername(UserUsernameRequest request, Long id) {
+    public UserResponse updateName(UserNameRequest request, Long id) {
         User user = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        user.setUsername(request.username());
+        user.setName(request.name());
 
         return UserResponse.fromEntity(user);
     }

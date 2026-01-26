@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.expenseTracker.dtos.JWTUserData;
 import com.example.expenseTracker.dtos.UserPasswordRequest;
 import com.example.expenseTracker.dtos.UserResponse;
-import com.example.expenseTracker.dtos.UserUsernameRequest;
+import com.example.expenseTracker.dtos.UserNameRequest;
 import com.example.expenseTracker.services.UserService;
 
 import jakarta.validation.Valid;
@@ -45,9 +45,9 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/username")
-    public ResponseEntity<Void> patchUsername(@Valid @RequestBody UserUsernameRequest request, @AuthenticationPrincipal JWTUserData userData) {
-        service.updateUsername(request, userData.userId());
+    @PatchMapping("/name")
+    public ResponseEntity<Void> patchName(@Valid @RequestBody UserNameRequest request, @AuthenticationPrincipal JWTUserData userData) {
+        service.updateName(request, userData.userId());
         return ResponseEntity.noContent().build();
     }
 

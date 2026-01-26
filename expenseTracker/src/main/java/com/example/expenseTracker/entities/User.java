@@ -44,7 +44,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotBlank
-    private String username;
+    private String name;
     @NotBlank
     @Column(unique = true)
     private String email;
@@ -67,8 +67,8 @@ public class User implements UserDetails {
     @Column(name = "role")
     private Set<Role> roles = new HashSet<>();
 
-    public User(String username, String email, String password) {
-        this.username = username;
+    public User(String name, String email, String password) {
+        this.name = name;
         this.email = email;
         this.password = password;
     }
