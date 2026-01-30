@@ -42,35 +42,43 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<CategoryResponse> findAll() {
-        return repository.findAll().stream()
+    public List<CategoryResponse> findAll(Long userId) {
+        List<Category> categories = new ArrayList<>();
+
+        categories.addAll(repository.findByUserIsNull());
+        categories.addAll(repository.findByUserId(userId));
+
+        return categories.stream()
                 .map(CategoryResponse::fromEntity)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<CategoryResponse> findAllByUserId(Long userId) {
-        List<CategoryResponse> responses = new ArrayList<>();
-
-        responses.addAll(repository.findByUserIsNull().stream()
+        return repository.findByUserId(userId).stream()
                 .map(CategoryResponse::fromEntity)
-                .toList());
+                .toList();
+    }
 
-        responses.addAll(repository.findByUserId(userId).stream()
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> findAllGlobalCategories() {
+        return repository.findByUserIsNull().stream()
                 .map(CategoryResponse::fromEntity)
-                .toList());
-
-        return responses;
+                .toList();
     }
 
     @Transactional()
     public CategoryResponse create(CategoryRequest request, Long userId) {
-        Category category = new Category(request.name(), null);
+        User user = userService.findEntityById(userId);
 
-        if (userId != null) {
-            User user = userService.findEntityById(userId);
-            category.setUser(user);
-        }
+        Category category = new Category(request.name(), user);
+
+        return CategoryResponse.fromEntity(repository.save(category));
+    }
+
+    @Transactional()
+    public CategoryResponse createGlobal(CategoryRequest request) {
+        Category category = new Category(request.name(), null);
 
         return CategoryResponse.fromEntity(repository.save(category));
     }

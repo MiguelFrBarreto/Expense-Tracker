@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <script src="index.js" defer></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <h1>EXPENSE TRACKER</h1>
+
+    <h2 id="userName"></h2>
+    <h3>Expenses</h3>
+    <ul id="expenses">
+    </ul>
+    <details>
+        <summary>
+            Criar expense
+        </summary>
+        <form>
+            <label for="description">Description:</label>
+            <input type="text" id="expenseDescription">
+            <br>
+            <label for="amount">Amount:</label>
+            <input type="number"id="expenseAmount">
+            <br>
+            <label for="date">Date:</label>
+            <input type="date" id="expenseDate">
+            <br>
+            <label>Type:</label>
+            <label for="income">Income</label>
+            <input type="radio" id="expenseIncome" value="INCOME" name="type">
+            <label for="expense">Expense</label>
+            <input type="radio" id="expenseExpense" value="EXPENSE" name="type">
+            <br>
+            <label for="category">Category:</label>
+            <select id="selectCategory" name="selectCategory">
+
+            </select>
+            <br>
+            <button type="button" id="createExpense">Criar</button>
+        </form>
+    </details>
+    <h3>Categories</h3>
+    <ul id="categories">
+    </ul>
+    <details>
+        <summary>
+            Criar category
+        </summary>
+        <form>
+            <label for="title">Name:</label>
+            <input type="text" id="categoryName">
+            <button type="button" id="createCategory">Criar</button>
+        </form>
+    </details>
+</body>
+
+</html>

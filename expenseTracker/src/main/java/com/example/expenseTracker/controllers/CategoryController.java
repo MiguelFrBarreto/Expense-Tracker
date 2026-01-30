@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 
 
+
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
@@ -33,8 +34,18 @@ public class CategoryController {
     private final CategoryService service;
 
     @GetMapping()
-    public ResponseEntity<List<CategoryResponse>> findAllByUserId(@AuthenticationPrincipal JWTUserData userData){
+    public ResponseEntity<List<CategoryResponse>> findAll(@AuthenticationPrincipal JWTUserData userData){
+        return ResponseEntity.ok(service.findAll(userData.userId()));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<CategoryResponse>> findAllByUserId(@AuthenticationPrincipal JWTUserData userData) {
         return ResponseEntity.ok(service.findAllByUserId(userData.userId()));
+    }
+
+    @GetMapping("/global")
+    public ResponseEntity<List<CategoryResponse>> findAllGlobalCategories() {
+        return ResponseEntity.ok(service.findAllGlobalCategories());
     }
 
     @GetMapping("/{id}")

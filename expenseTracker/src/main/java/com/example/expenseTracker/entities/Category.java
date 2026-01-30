@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,11 +21,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(of="id")
-@Table(name="categories")
+@EqualsAndHashCode(of = "id")
+@Table(name = "categories")
 public class Category {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
 
@@ -34,9 +35,19 @@ public class Category {
     }
 
     @ManyToOne
-    @JoinColumn(name="user_id")
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy="category")
-    List<Expense> expenses =  new ArrayList<>();
+    @OneToMany(mappedBy = "category")
+    List<Expense> expenses = new ArrayList<>();
+
+    @PreRemove
+    @SuppressWarnings("unused")
+    private void preRemove() {
+        if (expenses != null) {
+            for (Expense expense : expenses) {
+                expense.setCategory(null);
+            }
+        }
+    }
 }

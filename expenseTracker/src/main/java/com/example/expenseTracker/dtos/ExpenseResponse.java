@@ -13,12 +13,13 @@ public record ExpenseResponse(
         Type type,
         CategoryResponse category) {
     public static ExpenseResponse fromEntity(Expense expense) {
+        CategoryResponse category = expense.getCategory() == null ? null : CategoryResponse.fromEntity(expense.getCategory());
         return new ExpenseResponse(
                 expense.getId(),
                 expense.getDescription(),
                 expense.getAmount(),
                 expense.getDate(),
                 expense.getType(),
-                CategoryResponse.fromEntity(expense.getCategory()));
+                category);
     }
 }

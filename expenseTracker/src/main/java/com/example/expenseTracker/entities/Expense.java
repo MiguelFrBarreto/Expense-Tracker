@@ -24,11 +24,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(of="id")
-@Table(name="expenses")
+@EqualsAndHashCode(of = "id")
+@Table(name = "expenses")
 public class Expense {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotBlank
     private String description;
@@ -39,11 +39,11 @@ public class Expense {
     private Type type;
 
     @ManyToOne
-    @JoinColumn(name="user_id")
+    @JoinColumn(name = "user_id")
     User user;
 
     @ManyToOne
-    @JoinColumn(name="category_id")
+    @JoinColumn(name = "category_id")
     Category category;
 
     public Expense(@NotBlank String description, @Positive Double amount, Instant date, Type type, User user,

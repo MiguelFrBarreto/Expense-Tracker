@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.WebUtils;
 
 import com.example.expenseTracker.dtos.JWTUserData;
 
@@ -27,23 +27,46 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String authorizedHeader = request.getHeader("Authorization");
-        if (Strings.isNotEmpty(authorizedHeader) && authorizedHeader.startsWith("Bearer ")) {
-            String token = authorizedHeader.substring("Bearer ".length());
+        var cookie = WebUtils.getCookie(request, "auth_token");
+        if (cookie != null) {
+            String token = cookie.getValue();
             Optional<JWTUserData> optUser = tokenConfig.validateToken(token);
             if (optUser.isPresent()) {
                 JWTUserData userData = optUser.get();
                 List<SimpleGrantedAuthority> authorities = userData.roles().stream()
                         .map(SimpleGrantedAuthority::new)
                         .toList();
-
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userData,
                         null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-            filterChain.doFilter(request, response);
-        } else {
-            filterChain.doFilter(request, response);
         }
+        filterChain.doFilter(request, response);
     }
+
+    // @Override
+    // protected void doFilterInternal(HttpServletRequest request,
+    // HttpServletResponse response, FilterChain filterChain)
+    // throws ServletException, IOException {
+    // String authorizedHeader = request.getHeader("Authorization");
+    // if (Strings.isNotEmpty(authorizedHeader) &&
+    // authorizedHeader.startsWith("Bearer ")) {
+    // String token = authorizedHeader.substring("Bearer ".length());
+    // Optional<JWTUserData> optUser = tokenConfig.validateToken(token);
+    // if (optUser.isPresent()) {
+    // JWTUserData userData = optUser.get();
+    // List<SimpleGrantedAuthority> authorities = userData.roles().stream()
+    // .map(SimpleGrantedAuthority::new)
+    // .toList();
+
+    // UsernamePasswordAuthenticationToken authentication = new
+    // UsernamePasswordAuthenticationToken(userData,
+    // null, authorities);
+    // SecurityContextHolder.getContext().setAuthentication(authentication);
+    // }
+    // filterChain.doFilter(request, response);
+    // } else {
+    // filterChain.doFilter(request, response);
+    // }
+    // }
 }
